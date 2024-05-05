@@ -9,7 +9,6 @@ namespace TuNamespace.Data
         {
         }
 
-        // Aquí puedes definir las propiedades DbSet para tus modelos
-        // public DbSet<TuModelo> Modelos { get; set; }
+        public DbSet<User> Users { get; set; }
     }
 }

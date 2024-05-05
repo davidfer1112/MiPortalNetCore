@@ -3,9 +3,11 @@ using TuNamespace.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configura el contexto de la base de datos
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(builder.Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("DefaultConnection"))));
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // Agrega servicios al contenedor.
 builder.Services.AddEndpointsApiExplorer();
@@ -33,7 +35,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// Configura el pipeline de solicitudes HTTP.
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -46,6 +48,13 @@ var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
 };
+
+app.MapGet("/usuarios", async (ApplicationDbContext context) =>
+{
+    var users = await context.Users.ToListAsync(); 
+    return Results.Ok(users);
+});
+
 
 app.MapGet("/weatherforecast", () =>
 {
@@ -67,7 +76,7 @@ app.MapGet("/weatherforecast", () =>
 
 app.Run();
 
-// Define aquí la clase WeatherForecast
+
 public record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
 {
     public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
