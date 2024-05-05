@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-namespace TuNamespace.Data
+namespace MiPortal.Data
 {
     public class ApplicationDbContext : DbContext
     {
