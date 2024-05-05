@@ -7,11 +7,11 @@ public static class AppRoutes
 {
     public static void Configure(IEndpointRouteBuilder endpoints)
     {
-        endpoints.MapGet("/usuarios", async (ApplicationDbContext context) =>
-        {
-            var users = await context.Users.ToListAsync(); 
-            return Results.Ok(users);
-        });
+        // endpoints.MapGet("/usuarios", async (ApplicationDbContext context) =>
+        // {
+        //     var users = await context.Users.ToListAsync(); 
+        //     return Results.Ok(users);
+        // });
 
         endpoints.MapGet("/weatherforecast", () =>
         {

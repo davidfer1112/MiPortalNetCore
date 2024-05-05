@@ -16,9 +16,9 @@ namespace MiPortal
         }
 
         public void ConfigureServices(IServiceCollection services){
+            services.AddControllers(); // Asegúrate de que esto está agregado
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseMySql(Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(Configuration.GetConnectionString("DefaultConnection"))));
-
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
@@ -45,7 +45,8 @@ namespace MiPortal
 
             app.UseEndpoints(endpoints =>
             {
-                AppRoutes.Configure(endpoints);
+                endpoints.MapControllers();  
+                AppRoutes.Configure(endpoints); 
             });
 
             Console.WriteLine("Inicializando servidor...");
