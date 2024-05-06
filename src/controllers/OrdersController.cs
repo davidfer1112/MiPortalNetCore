@@ -1,17 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiPortal.Data;
-using MiPortal;
+using MiPortal.Models;  // Asegúrate de incluir tus modelos, si están en un namespace separado
+using MiPortal.Services;  // Asegúrate de que tu servicio de correo está correctamente referenciado
 
 [ApiController]
 [Route("[controller]")]
 public class OrdersController : ControllerBase
 {
     private readonly ApplicationDbContext _context;
+    private readonly IEmailService _emailService;
 
-    public OrdersController(ApplicationDbContext context)
+    public OrdersController(ApplicationDbContext context, IEmailService emailService)
     {
         _context = context;
+        _emailService = emailService;
     }
 
     // GET: /Orders
@@ -40,6 +43,21 @@ public class OrdersController : ControllerBase
     {
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
+
+        // Preparar y enviar el correo electrónico
+        var user = await _context.Users.FindAsync(order.UserId);
+        if (user != null)
+        {
+            var email = new EmailDTO
+            {
+                Para = user.Email,
+                Asunto = "Confirmación de Orden",
+                Contenido = $"Hola {user.Username},<br/>Tu orden con ID {order.OrderId} ha sido creada exitosamente."
+            };
+
+            _emailService.SendEmail(email);
+        }
+
         return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
     }
 
