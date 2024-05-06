@@ -37,3 +37,6 @@ D:\U\Cursos\.NET\ProyectoArqui\obj\Debug\net8.0\ProyectoArqui.pdb
 D:\U\Cursos\.NET\ProyectoArqui\obj\Debug\net8.0\ProyectoArqui.genruntimeconfig.cache
 D:\U\Cursos\.NET\ProyectoArqui\obj\Debug\net8.0\ref\ProyectoArqui.dll
 D:\U\Cursos\.NET\ProyectoArqui\obj\Debug\net8.0\ProyectoArqui.sourcelink.json
+D:\U\Cursos\.NET\ProyectoArqui\bin\Debug\net8.0\BouncyCastle.Cryptography.dll
+D:\U\Cursos\.NET\ProyectoArqui\bin\Debug\net8.0\MailKit.dll
+D:\U\Cursos\.NET\ProyectoArqui\bin\Debug\net8.0\MimeKit.dll

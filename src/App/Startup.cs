@@ -16,7 +16,7 @@ namespace MiPortal
         }
 
         public void ConfigureServices(IServiceCollection services){
-            services.AddControllers(); // Asegúrate de que esto está agregado
+            services.AddControllers(); 
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseMySql(Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(Configuration.GetConnectionString("DefaultConnection"))));
             services.AddEndpointsApiExplorer();
