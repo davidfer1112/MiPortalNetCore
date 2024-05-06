@@ -49,6 +49,22 @@ CREATE TABLE OrderDetails (
     FOREIGN KEY (ProductId) REFERENCES Products(ProductId)
 );
 
+CREATE TABLE Carts (
+    CartId INT AUTO_INCREMENT PRIMARY KEY,
+    UserId INT NOT NULL,
+    CreatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserId) REFERENCES Users(UserId)
+);
+
+CREATE TABLE CartItems (
+    CartItemId INT AUTO_INCREMENT PRIMARY KEY,
+    CartId INT NOT NULL,
+    ProductId INT NOT NULL,
+    Quantity INT DEFAULT 1,
+    FOREIGN KEY (CartId) REFERENCES Carts(CartId),
+    FOREIGN KEY (ProductId) REFERENCES Products(ProductId)
+);
+
 
 -- Insertar Categorías
 INSERT INTO Categories (CategoryName, Description) VALUES ('Electronics', 'Electronic Devices'), ('Clothing', 'Apparel and Accessories');

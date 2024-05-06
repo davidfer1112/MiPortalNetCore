@@ -33,14 +33,22 @@ public class UsersController : ControllerBase
         return Ok(user);
     }
 
-    // POST: /Users
-    [HttpPost]
-    public async Task<IActionResult> CreateUser([FromBody] User user)
+// POST: /Users
+[HttpPost]
+public async Task<IActionResult> CreateUser([FromBody] User user)
+{
+    _context.Users.Add(user);
+    await _context.SaveChangesAsync(); // Asegúrate de que el usuario se guarda y obtiene un ID antes de crear el carrito.
+
+    var cart = new Cart
     {
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
-        return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, user);
-    }
+        UserId = user.UserId  // Asigna el UserId al carrito.
+    };
+    _context.Carts.Add(cart);
+    await _context.SaveChangesAsync(); // Guarda el carrito en la base de datos.
+
+    return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, user);
+}
 
     // PUT: /Users/{id}
     [HttpPut("{id}")]

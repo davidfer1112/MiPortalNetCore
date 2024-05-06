@@ -36,3 +36,4 @@ D:\U\Cursos\.NET\ProyectoArqui\obj\Debug\net8.0\refint\ProyectoArqui.dll
 D:\U\Cursos\.NET\ProyectoArqui\obj\Debug\net8.0\ProyectoArqui.pdb
 D:\U\Cursos\.NET\ProyectoArqui\obj\Debug\net8.0\ProyectoArqui.genruntimeconfig.cache
 D:\U\Cursos\.NET\ProyectoArqui\obj\Debug\net8.0\ref\ProyectoArqui.dll
+D:\U\Cursos\.NET\ProyectoArqui\obj\Debug\net8.0\ProyectoArqui.sourcelink.json
