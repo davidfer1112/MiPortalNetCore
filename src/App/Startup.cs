@@ -16,6 +16,17 @@ namespace MiPortal
         }
 
         public void ConfigureServices(IServiceCollection services){
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowSpecificOrigin", 
+                    builder =>
+                    {
+                        builder.WithOrigins("http://localhost:5173")  // URL del cliente
+                            .AllowAnyHeader()
+                            .AllowAnyMethod();
+                    });
+            });
             services.AddControllers(); 
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseMySql(Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(Configuration.GetConnectionString("DefaultConnection"))));
@@ -38,6 +49,8 @@ namespace MiPortal
             }
 
             app.UseHttpsRedirection();
+
+            app.UseCors("AllowSpecificOrigin");
 
             app.UseRouting();
 
