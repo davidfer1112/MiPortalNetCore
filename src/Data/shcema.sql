@@ -93,3 +93,66 @@ FROM Orders o
 JOIN OrderDetails od ON o.OrderId = od.OrderId
 WHERE o.UserId = 1;
 
+-- Base de datos para PostgresSQL
+
+-- Creación de la tabla de Usuarios
+CREATE TABLE Users (
+    UserId SERIAL PRIMARY KEY,
+    WebId VARCHAR(255)
+);
+
+-- Creación de la tabla de Categorías
+CREATE TABLE Categories (
+    CategoryId SERIAL PRIMARY KEY,
+    CategoryName VARCHAR(255) NOT NULL,
+    Description TEXT
+);
+
+-- Creación de la tabla de Productos
+CREATE TABLE Products (
+    ProductId SERIAL PRIMARY KEY,
+    ProductName VARCHAR(255) NOT NULL,
+    Description TEXT,
+    Price NUMERIC(10, 2) NOT NULL,
+    CategoryId INT,
+    Stock INT DEFAULT 0,
+    ImageUrl VARCHAR(500),
+    FOREIGN KEY (CategoryId) REFERENCES Categories(CategoryId)
+);
+
+-- Creación de la tabla de Pedidos
+CREATE TABLE Orders (
+    OrderId SERIAL PRIMARY KEY,
+    UserId INT,
+    OrderDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    Status VARCHAR(50),
+    TotalAmount NUMERIC(10, 2),
+    FOREIGN KEY (UserId) REFERENCES Users(UserId)
+);
+
+-- Creación de la tabla de Detalles de Pedidos
+CREATE TABLE OrderDetails (
+    OrderDetailId SERIAL PRIMARY KEY,
+    OrderId INT,
+    ProductId INT,
+    Quantity INT,
+    Price NUMERIC(10, 2),
+    FOREIGN KEY (OrderId) REFERENCES Orders(OrderId),
+    FOREIGN KEY (ProductId) REFERENCES Products(ProductId)
+);
+
+CREATE TABLE Carts (
+    CartId SERIAL PRIMARY KEY,
+    UserId INT NOT NULL,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (UserId) REFERENCES Users(UserId)
+);
+
+CREATE TABLE CartItems (
+    CartItemId SERIAL PRIMARY KEY,
+    CartId INT NOT NULL,
+    ProductId INT NOT NULL,
+    Quantity INT DEFAULT 1,
+    FOREIGN KEY (CartId) REFERENCES Carts(CartId),
+    FOREIGN KEY (ProductId) REFERENCES Products(ProductId)
+);
