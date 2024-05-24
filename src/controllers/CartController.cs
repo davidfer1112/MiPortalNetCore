@@ -31,34 +31,53 @@ public class CartController : ControllerBase
         return cart;
     }
 
-    // POST: /Cart/{userId}/Add - Añadir un ítem al carrito
-    [HttpPost("{userId}/Add")]
-    public async Task<IActionResult> AddToCart(int userId, [FromBody] CartItem cartItem)
+    // POST: /Cart/Add - Añadir un ítem al carrito usando webid
+    [HttpPost("Add")]
+    public async Task<IActionResult> AddToCart([FromBody] AddToCartRequest request)
     {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Webid == request.Webid);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+
         var cart = await _context.Carts
                                  .Include(c => c.CartItems)
-                                 .FirstOrDefaultAsync(c => c.UserId == userId);
+                                 .FirstOrDefaultAsync(c => c.UserId == user.UserId);
         if (cart == null)
         {
-            cart = new Cart { UserId = userId };
+            cart = new Cart { UserId = user.UserId };
             _context.Carts.Add(cart);
             await _context.SaveChangesAsync();
         }
 
-        var existingCartItem = cart.CartItems?.FirstOrDefault(ci => ci.ProductId == cartItem.ProductId);
+        var existingCartItem = cart.CartItems?.FirstOrDefault(ci => ci.ProductId == request.ProductId);
         if (existingCartItem == null)
         {
-            cartItem.CartId = cart.CartId; // Asegurarse de asignar el CartId
+            var cartItem = new CartItem
+            {
+                CartId = cart.CartId,
+                ProductId = request.ProductId,
+                Quantity = request.Quantity
+            };
             _context.CartItems.Add(cartItem);
         }
         else
         {
-            existingCartItem.Quantity += cartItem.Quantity;
+            existingCartItem.Quantity += request.Quantity;
         }
         
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
+    public class AddToCartRequest
+    {
+        public string? Webid { get; set; }
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+    }
+
 
     // PUT: /Cart/{userId}/Update - Actualizar un ítem en el carrito
     [HttpPut("{userId}/Update")]

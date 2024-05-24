@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("ProyectoArqui")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b9952ef31e4e56f16c06e331ea72c6198cb2312b")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+1edcc6c6a0da09d10360148d67bd637d4ed83c2c")]
 [assembly: System.Reflection.AssemblyProductAttribute("ProyectoArqui")]
 [assembly: System.Reflection.AssemblyTitleAttribute("ProyectoArqui")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
