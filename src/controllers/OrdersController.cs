@@ -47,12 +47,13 @@ public class OrdersController : ControllerBase
         // Preparar y enviar el correo electrónico
         var user = await _context.Users.FindAsync(order.UserId);
         if (user != null)
-        {
+        {   
+            //configurar esto con la informacion que le llegue desde el front
             var email = new EmailDTO
             {
-                Para = user.Email,
+                //Para = user.Email, 
                 Asunto = "Confirmación de Orden",
-                Contenido = $"Hola {user.Username},<br/>Tu orden con ID {order.OrderId} ha sido creada exitosamente."
+                //Contenido = $"Hola {user.Username},<br/>Tu orden con ID {order.OrderId} ha sido creada exitosamente."
             };
 
             _emailService.SendEmail(email);
