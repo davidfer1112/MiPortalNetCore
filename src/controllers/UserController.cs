@@ -85,4 +85,28 @@ public async Task<IActionResult> CreateUser([FromBody] User user)
         await _context.SaveChangesAsync();
         return NoContent();
     }
+
+
+    // POST: /Users/CheckOrCreate
+    [HttpPost("CheckOrCreate")]
+    public async Task<IActionResult> CheckOrCreateUser([FromBody] User user)
+    {
+        var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Webid == user.Webid);
+        if (existingUser != null)
+        {
+            return Ok(existingUser);
+        }
+
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        var cart = new Cart
+        {
+            UserId = user.UserId  // Asigna el UserId al carrito.
+        };
+        _context.Carts.Add(cart);
+        await _context.SaveChangesAsync(); // Guarda el carrito en la base de datos.
+
+        return CreatedAtAction(nameof(GetUser), new { id = user.UserId }, user);
+    }
 }
