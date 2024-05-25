@@ -40,60 +40,67 @@ public class OrdersController : ControllerBase
     }
 
     // POST: /Orders
-[HttpPost]
-public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDTO orderRequest)
-{
-    var order = new Order
+    [HttpPost]
+    public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDTO orderRequest)
     {
-        UserId = orderRequest.UserId,
-        OrderDate = orderRequest.OrderDate.ToUniversalTime(), // Convertir a UTC
-        Status = orderRequest.Status,
-        TotalAmount = orderRequest.TotalAmount
-    };
-
-    _context.Orders.Add(order);
-    await _context.SaveChangesAsync();
-
-    // Crear los detalles de la orden
-    foreach (var detail in orderRequest.OrderDetails)
-    {
-        var orderDetail = new OrderDetail
+        // Buscar el usuario por webId
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Webid == orderRequest.WebId);
+        if (user == null)
         {
-            OrderId = order.OrderId,
-            ProductId = detail.ProductId,
-            Quantity = detail.Quantity,
-            Price = detail.Price
+            return NotFound("User not found");
+        }
+
+        var order = new Order
+        {
+            UserId = user.UserId,
+            OrderDate = orderRequest.OrderDate.ToUniversalTime(), // Convertir a UTC
+            Status = orderRequest.Status,
+            TotalAmount = orderRequest.TotalAmount
         };
-        _context.OrderDetails.Add(orderDetail);
-    }
 
-    await _context.SaveChangesAsync();
+        _context.Orders.Add(order);
+        await _context.SaveChangesAsync();
 
-    // Leer el contenido de la plantilla HTML
-    string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "src", "template", "OrderConfirmationTemplate.html");
-    if (!System.IO.File.Exists(templatePath))
-    {
-        return StatusCode(500, "Template file not found");
-    }
+        // Crear los detalles de la orden
+        foreach (var detail in orderRequest.OrderDetails)
+        {
+            var orderDetail = new OrderDetail
+            {
+                OrderId = order.OrderId,
+                ProductId = detail.ProductId,
+                Quantity = detail.Quantity,
+                Price = detail.Price
+            };
+            _context.OrderDetails.Add(orderDetail);
+        }
 
-    string emailContent = await System.IO.File.ReadAllTextAsync(templatePath);
+        await _context.SaveChangesAsync();
 
-    // Reemplazar los placeholders con los valores reales
-    emailContent = emailContent.Replace("{USERNAME}", orderRequest.Username)
+        // Leer el contenido de la plantilla HTML
+        string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "src", "template", "OrderConfirmationTemplate.html");
+        if (!System.IO.File.Exists(templatePath))
+        {
+            return StatusCode(500, "Template file not found");
+        }
+
+        string emailContent = await System.IO.File.ReadAllTextAsync(templatePath);
+
+        // Reemplazar los placeholders con los valores reales
+        emailContent = emailContent.Replace("{USERNAME}", orderRequest.Username)
                                .Replace("{ORDERID}", order.OrderId.ToString());
 
-    // Preparar y enviar el correo electrónico
-    var email = new EmailDTO
-    {
-        Para = orderRequest.Email,
-        Asunto = "Confirmación de Orden",
-        Contenido = emailContent
-    };
+        // Preparar y enviar el correo electrónico
+        var email = new EmailDTO
+        {
+            Para = orderRequest.Email,
+            Asunto = "Confirmación de Orden",
+            Contenido = emailContent
+        };
 
-    _emailService.SendEmail(email);
+        _emailService.SendEmail(email);
 
-    return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
-}
+        return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
+    }
 
     // PUT: /Orders/{id}
     [HttpPut("{id}")]
@@ -134,7 +141,7 @@ public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDTO orderReq
 
 public class OrderRequestDTO
 {
-    public int UserId { get; set; }
+    public string? WebId { get; set; } 
     public DateTime OrderDate { get; set; }
     public string? Status { get; set; }
     public decimal TotalAmount { get; set; }
