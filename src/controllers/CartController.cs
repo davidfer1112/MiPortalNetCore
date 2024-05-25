@@ -122,12 +122,23 @@ public class CartController : ControllerBase
         return NoContent();
     }
 
-    // DELETE: /Cart/{userId}/Remove/{itemId} - Eliminar un ítem del carrito
-    [HttpDelete("{userId}/Remove/{itemId}")]
-    public async Task<IActionResult> RemoveFromCart(int userId, int itemId)
+     // DELETE: /Cart/Remove - Eliminar un ítem del carrito usando webid y itemId
+    [HttpDelete("Remove")]
+    public async Task<IActionResult> RemoveFromCartByWebid([FromBody] RemoveFromCartRequest request)
     {
-        var cartItem = await _context.CartItems
-                                     .FirstOrDefaultAsync(ci => ci.CartItemId == itemId);
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Webid == request.Webid);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+
+        var cart = await _context.Carts.FirstOrDefaultAsync(c => c.UserId == user.UserId);
+        if (cart == null)
+        {
+            return NotFound("Cart not found");
+        }
+
+        var cartItem = await _context.CartItems.FirstOrDefaultAsync(ci => ci.CartId == cart.CartId && ci.CartItemId == request.ItemId);
         if (cartItem == null)
             return NotFound("Cart item not found");
 
@@ -135,6 +146,12 @@ public class CartController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    public class RemoveFromCartRequest
+    {
+        public string? Webid { get; set; }
+        public int ItemId { get; set; }
     }
 
     // DELETE: /Cart/{userId}/Clear - Vaciar el carrito
