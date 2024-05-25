@@ -15,11 +15,11 @@ namespace MiPortal
             Configuration = configuration;
         }
 
-        public void ConfigureServices(IServiceCollection services){
-
+        public void ConfigureServices(IServiceCollection services)
+        {
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowSpecificOrigin", 
+                options.AddPolicy("AllowSpecificOrigin",
                     builder =>
                     {
                         builder.WithOrigins("http://localhost:5173")  // URL del cliente
@@ -27,17 +27,18 @@ namespace MiPortal
                             .AllowAnyMethod();
                     });
             });
-            services.AddControllers(); 
+
+            services.AddControllers();
+
             services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseMySql(Configuration.GetConnectionString("DefaultConnection"), ServerVersion.AutoDetect(Configuration.GetConnectionString("DefaultConnection"))));
+                options.UseNpgsql(Configuration.GetConnectionString("DefaultConnection")));
+
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen();
 
             // autorización
             services.AddAuthorization();
-
         }
-        
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -49,21 +50,18 @@ namespace MiPortal
             }
 
             app.UseHttpsRedirection();
-
             app.UseCors("AllowSpecificOrigin");
-
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();  
-                AppRoutes.Configure(endpoints); 
+                endpoints.MapControllers();
+                AppRoutes.Configure(endpoints);
             });
 
             Console.WriteLine("Inicializando servidor...");
-            TestDatabaseConnection(app);     
+            TestDatabaseConnection(app);
         }
 
         private void TestDatabaseConnection(IApplicationBuilder app)
