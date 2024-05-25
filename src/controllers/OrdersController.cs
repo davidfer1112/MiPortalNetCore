@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MiPortal.Data;
-using MiPortal.Models;  // Asegúrate de incluir tus modelos, si están en un namespace separado
-using MiPortal.Services;  // Asegúrate de que tu servicio de correo está correctamente referenciado
+using MiPortal.Models;
+using MiPortal.Services;
+using System.IO;
+using System.Threading.Tasks;
 
 [ApiController]
 [Route("[controller]")]
@@ -39,25 +41,41 @@ public class OrdersController : ControllerBase
 
     // POST: /Orders
     [HttpPost]
-    public async Task<IActionResult> CreateOrder([FromBody] Order order)
+    public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDTO orderRequest)
     {
+        var order = new Order
+        {
+            UserId = orderRequest.UserId,
+            OrderDate = orderRequest.OrderDate.ToUniversalTime(), // Convertir a UTC
+            Status = orderRequest.Status,
+            TotalAmount = orderRequest.TotalAmount
+        };
+
         _context.Orders.Add(order);
         await _context.SaveChangesAsync();
 
-        // Preparar y enviar el correo electrónico
-        var user = await _context.Users.FindAsync(order.UserId);
-        if (user != null)
-        {   
-            //configurar esto con la informacion que le llegue desde el front
-            var email = new EmailDTO
-            {
-                //Para = user.Email, 
-                Asunto = "Confirmación de Orden",
-                //Contenido = $"Hola {user.Username},<br/>Tu orden con ID {order.OrderId} ha sido creada exitosamente."
-            };
-
-            _emailService.SendEmail(email);
+        // Leer el contenido de la plantilla HTML
+        string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "src", "template", "OrderConfirmationTemplate.html");
+        if (!System.IO.File.Exists(templatePath))
+        {
+            return StatusCode(500, "Template file not found");
         }
+
+        string emailContent = await System.IO.File.ReadAllTextAsync(templatePath);
+
+        // Reemplazar los placeholders con los valores reales
+        emailContent = emailContent.Replace("{USERNAME}", orderRequest.Username)
+                                   .Replace("{ORDERID}", order.OrderId.ToString());
+
+        // Preparar y enviar el correo electrónico
+        var email = new EmailDTO
+        {
+            Para = orderRequest.Email,
+            Asunto = "Confirmación de Orden",
+            Contenido = emailContent
+        };
+
+        _emailService.SendEmail(email);
 
         return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
     }
@@ -97,4 +115,14 @@ public class OrdersController : ControllerBase
         await _context.SaveChangesAsync();
         return NoContent();
     }
+}
+
+public class OrderRequestDTO
+{
+    public int UserId { get; set; }
+    public DateTime OrderDate { get; set; }
+    public string? Status { get; set; }
+    public decimal TotalAmount { get; set; }
+    public string? Username { get; set; }
+    public string? Email { get; set; }
 }
