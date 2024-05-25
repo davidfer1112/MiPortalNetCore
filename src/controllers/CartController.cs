@@ -16,6 +16,34 @@ public class CartController : ControllerBase
         _context = context;
     }
 
+
+    // POST: /Cart/Get - Obtener el carrito de un usuario usando webid
+    [HttpPost("Get")]
+    public async Task<ActionResult<Cart>> GetCartByWebid([FromBody] GetCartRequest request)
+    {
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Webid == request.Webid);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+
+        var cart = await _context.Carts
+                                 .Include(c => c.CartItems)
+                                 .ThenInclude(ci => ci.Product)
+                                 .FirstOrDefaultAsync(c => c.UserId == user.UserId);
+
+        if (cart == null)
+            return NotFound("Cart not found");
+
+        return cart;
+    }
+
+
+    public class GetCartRequest
+    {
+        public string? Webid { get; set; }
+    }
+
     // GET: /Cart/{userId} - Obtener el carrito de un usuario
     [HttpGet("{userId}")]
     public async Task<ActionResult<Cart>> GetCart(int userId)
