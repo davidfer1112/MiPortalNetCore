@@ -40,45 +40,60 @@ public class OrdersController : ControllerBase
     }
 
     // POST: /Orders
-    [HttpPost]
-    public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDTO orderRequest)
+[HttpPost]
+public async Task<IActionResult> CreateOrder([FromBody] OrderRequestDTO orderRequest)
+{
+    var order = new Order
     {
-        var order = new Order
+        UserId = orderRequest.UserId,
+        OrderDate = orderRequest.OrderDate.ToUniversalTime(), // Convertir a UTC
+        Status = orderRequest.Status,
+        TotalAmount = orderRequest.TotalAmount
+    };
+
+    _context.Orders.Add(order);
+    await _context.SaveChangesAsync();
+
+    // Crear los detalles de la orden
+    foreach (var detail in orderRequest.OrderDetails)
+    {
+        var orderDetail = new OrderDetail
         {
-            UserId = orderRequest.UserId,
-            OrderDate = orderRequest.OrderDate.ToUniversalTime(), // Convertir a UTC
-            Status = orderRequest.Status,
-            TotalAmount = orderRequest.TotalAmount
+            OrderId = order.OrderId,
+            ProductId = detail.ProductId,
+            Quantity = detail.Quantity,
+            Price = detail.Price
         };
-
-        _context.Orders.Add(order);
-        await _context.SaveChangesAsync();
-
-        // Leer el contenido de la plantilla HTML
-        string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "src", "template", "OrderConfirmationTemplate.html");
-        if (!System.IO.File.Exists(templatePath))
-        {
-            return StatusCode(500, "Template file not found");
-        }
-
-        string emailContent = await System.IO.File.ReadAllTextAsync(templatePath);
-
-        // Reemplazar los placeholders con los valores reales
-        emailContent = emailContent.Replace("{USERNAME}", orderRequest.Username)
-                                   .Replace("{ORDERID}", order.OrderId.ToString());
-
-        // Preparar y enviar el correo electrónico
-        var email = new EmailDTO
-        {
-            Para = orderRequest.Email,
-            Asunto = "Confirmación de Orden",
-            Contenido = emailContent
-        };
-
-        _emailService.SendEmail(email);
-
-        return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
+        _context.OrderDetails.Add(orderDetail);
     }
+
+    await _context.SaveChangesAsync();
+
+    // Leer el contenido de la plantilla HTML
+    string templatePath = Path.Combine(Directory.GetCurrentDirectory(), "src", "template", "OrderConfirmationTemplate.html");
+    if (!System.IO.File.Exists(templatePath))
+    {
+        return StatusCode(500, "Template file not found");
+    }
+
+    string emailContent = await System.IO.File.ReadAllTextAsync(templatePath);
+
+    // Reemplazar los placeholders con los valores reales
+    emailContent = emailContent.Replace("{USERNAME}", orderRequest.Username)
+                               .Replace("{ORDERID}", order.OrderId.ToString());
+
+    // Preparar y enviar el correo electrónico
+    var email = new EmailDTO
+    {
+        Para = orderRequest.Email,
+        Asunto = "Confirmación de Orden",
+        Contenido = emailContent
+    };
+
+    _emailService.SendEmail(email);
+
+    return CreatedAtAction(nameof(GetOrder), new { id = order.OrderId }, order);
+}
 
     // PUT: /Orders/{id}
     [HttpPut("{id}")]
@@ -125,4 +140,12 @@ public class OrderRequestDTO
     public decimal TotalAmount { get; set; }
     public string? Username { get; set; }
     public string? Email { get; set; }
+    public List<OrderDetailDTO> OrderDetails { get; set; } = new List<OrderDetailDTO>();
+}
+
+public class OrderDetailDTO
+{
+    public int ProductId { get; set; }
+    public int Quantity { get; set; }
+    public decimal Price { get; set; }
 }
