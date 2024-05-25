@@ -154,22 +154,36 @@ public class CartController : ControllerBase
         public int ItemId { get; set; }
     }
 
-    // DELETE: /Cart/{userId}/Clear - Vaciar el carrito
-    [HttpDelete("{userId}/Clear")]
-    public async Task<IActionResult> ClearCart(int userId)
+    // DELETE: /Cart/Clear - Vaciar el carrito
+    [HttpDelete("Clear")]
+    public async Task<IActionResult> ClearCart([FromBody] ClearCartRequestDTO request)
     {
+        // Buscar el usuario por webId
+        var user = await _context.Users.FirstOrDefaultAsync(u => u.Webid == request.WebId);
+        if (user == null)
+        {
+            return NotFound("User not found");
+        }
+
         var cart = await _context.Carts
-                                 .Include(c => c.CartItems)
-                                 .FirstOrDefaultAsync(c => c.UserId == userId);
+                             .Include(c => c.CartItems)
+                             .FirstOrDefaultAsync(c => c.UserId == user.UserId);
         if (cart == null)
+        {
             return NotFound("Cart not found");
+        }
 
         if (cart.CartItems != null && cart.CartItems.Any())
         {
             _context.CartItems.RemoveRange(cart.CartItems);
         }
-        
+
         await _context.SaveChangesAsync();
         return NoContent();
+    }
+
+    public class ClearCartRequestDTO
+    {
+        public string? WebId { get; set; }
     }
 }
