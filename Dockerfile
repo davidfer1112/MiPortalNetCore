@@ -20,4 +20,6 @@ RUN dotnet publish "ProyectoArqui.csproj" -c Release -o /app/publish
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+# Copiar la carpeta de plantillas a la imagen final
+COPY src/template /app/src/template
 ENTRYPOINT ["dotnet", "ProyectoArqui.dll"]
