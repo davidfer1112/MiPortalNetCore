@@ -19,12 +19,12 @@ namespace MiPortal
         {
             services.AddCors(options =>
             {
-                options.AddPolicy("AllowSpecificOrigin",
+                options.AddPolicy("AllowAll",
                     builder =>
                     {
-                        builder.WithOrigins("http://localhost:5173")  // URL del cliente
-                            .AllowAnyHeader()
-                            .AllowAnyMethod();
+                        builder.AllowAnyOrigin()
+                               .AllowAnyHeader()
+                               .AllowAnyMethod();
                     });
             });
 
@@ -50,7 +50,7 @@ namespace MiPortal
             }
 
             app.UseHttpsRedirection();
-            app.UseCors("AllowSpecificOrigin");
+            app.UseCors("AllowAll");
             app.UseRouting();
             app.UseAuthorization();
 
